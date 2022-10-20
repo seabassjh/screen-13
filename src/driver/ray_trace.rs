@@ -22,6 +22,13 @@ pub struct RayTracePipeline {
     shader_group_handles: Vec<u8>,
 }
 
+pub struct RayTracingShaderGroupInfo {
+    pub group_count: u32,
+    pub raygen_shader_count: u32,
+    pub miss_shader_count: u32,
+    pub hit_shader_count: u32,
+}
+
 impl RayTracePipeline {
     pub fn create<S>(
         device: &Arc<Device>,
@@ -236,6 +243,37 @@ impl RayTracePipeline {
         let start = idx * shader_group_handle_size as usize;
         let end = start + shader_group_handle_size as usize;
         Ok(&self.shader_group_handles[start..end])
+    }
+
+    pub fn get_shader_group_handles(
+        &self,
+        shader_desc: RayTracingShaderGroupInfo,
+    ) -> Result<Vec<u8>, DriverError> {
+        let &PhysicalDeviceRayTracePipelineProperties {
+            shader_group_handle_size,
+            ..
+        } = self
+            .device
+            .ray_tracing_pipeline_properties
+            .as_ref()
+            .ok_or(DriverError::Unsupported)?;
+
+        let ray_tracing_pipeline_ext = self
+            .device
+            .ray_tracing_pipeline_ext
+            .as_ref()
+            .ok_or(DriverError::Unsupported)?;
+
+        Ok(unsafe {
+            ray_tracing_pipeline_ext
+                .get_ray_tracing_shader_group_handles(
+                    self.pipeline,
+                    0,
+                    shader_desc.group_count as u32,
+                    shader_desc.group_count as usize * shader_group_handle_size as usize,
+                )
+                .map_err(|_| DriverError::InvalidData)?
+        })
     }
 }
 

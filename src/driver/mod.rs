@@ -41,7 +41,7 @@ pub use {
         physical_device::{PhysicalDevice, QueueFamily, QueueFamilyProperties},
         ray_trace::{
             RayTracePipeline, RayTracePipelineInfo, RayTracePipelineInfoBuilder,
-            RayTraceShaderGroup,
+            RayTraceShaderGroup, RayTracingShaderGroupInfo,
         },
         render_pass::{
             AttachmentInfo, AttachmentInfoBuilder, AttachmentRef, FramebufferKey,
